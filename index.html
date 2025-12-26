@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paris Sportifs Optimizer - Mise à jour 26/12/2025 à 17:20</title>
+    <title>Paris Sportifs Optimizer - Mise à jour 26/12/2025 à 17:30</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -50,7 +49,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
+        
         .update-tag {
             background: var(--card-bg);
             padding: 5px 12px;
@@ -128,7 +127,7 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 15px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0,0,0,0.2);
             padding: 10px;
             border-radius: 6px;
         }
@@ -176,12 +175,11 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header>
             <h1>🎯 Paris Sportifs Optimizer</h1>
-            <div class="update-tag">Dernière MàJ: 26/12/2025 à 17:20</div>
+            <div class="update-tag">Dernière MàJ: 26/12/2025 à 17:30</div>
         </header>
 
         <div class="tabs">
@@ -193,142 +191,182 @@
     </div>
 
     <script>
-        // Injection des données par le script Python
-        const STORE = {
-            pmu: {"matches_3p": [], "matches_2p": [], "count_3p": 0, "count_2p": 0, "timestamp": "26/12/2025 17:20", "status": "success"},
-        winamax: { { initial_data_winamax | safe } }
+        // Gestion globale des erreurs
+        window.onerror = function(msg, url, line) {
+            const content = document.getElementById('content');
+            if (content) {
+                content.innerHTML = `<div style="color:#ef4444;padding:20px;text-align:center;background:#1e293b;border-radius:10px;">
+                    <h3>⚠️ Erreur Technique</h3>
+                    <p>${msg}</p>
+                    <small style="color:#94a3b8">${url}:${line}</small>
+                </div>`;
+            }
         };
 
-        let currentBookmaker = 'winamax';
+        try {
+            // Injection des données par le script Python
+            const STORE = {
+                pmu: {"matches_3p": [], "matches_2p": [], "count_3p": 0, "count_2p": 0, "timestamp": "26/12/2025 17:30", "status": "success"},
+                winamax: {"matches_3p": [], "matches_2p": [], "count_3p": 0, "count_2p": 0, "timestamp": "26/12/2025 17:30", "status": "success"}
+            };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData(currentBookmaker);
-        });
+            let currentBookmaker = 'winamax';
 
-        function switchTab(bm) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            currentBookmaker = bm;
-            loadData(bm);
-        }
+            document.addEventListener('DOMContentLoaded', () => {
+                loadData(currentBookmaker);
+            });
 
-        function loadData(bm) {
-            const content = document.getElementById('content');
-            const data = STORE[bm];
-
-            if (!data || data.error) {
-                content.innerHTML = `<div style="text-align:center;color:var(--danger)">Données indisponibles: ${data ? data.error : 'Erreur inconnue'}</div>`;
-                return;
+            function switchTab(bm) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                event.target.classList.add('active');
+                currentBookmaker = bm;
+                loadData(bm);
             }
 
-            displayMatches(data);
-        }
-
-        function displayMatches(data) {
-            const content = document.getElementById('content');
-            let html = '';
-
-            // Section 3 Issues
-            html += `<div class="section-title">
-                        Matchs à 3 issues (Foot, Rugby...) 
-                        <span class="badge">${data.count_3p}</span>
-                     </div>`;
-
-            if (data.matches_3p.length === 0) {
-                html += '<p style="color:var(--text-secondary)">Aucun match trouvé.</p>';
-            } else {
-                html += '<div class="matches-grid">';
-                data.matches_3p.forEach(m => {
-                    const color = m.conversion_rate >= 100 ? '#10b981' : (m.conversion_rate >= 70 ? '#f59e0b' : '#ef4444');
-                    html += `
-                        <div class="match-card">
-                            <div class="match-header">
-                                <div>
-                                    <div class="teams">${m.home_team} vs ${m.away_team}</div>
-                                    <div class="meta">${m.competition} - ${m.sport || ''}</div>
-                                </div>
-                                <div class="conversion" style="color:${color}">${m.conversion_rate}%</div>
-                            </div>
-                            
-                            <div class="odds-row">
-                                <div class="odd-item">
-                                    <div class="odd-label">1</div>
-                                    <div class="odd-val">${m.odds['1'].toFixed(2)}</div>
-                                </div>
-                                <div class="odd-item">
-                                    <div class="odd-label">N</div>
-                                    <div class="odd-val">${m.odds['X'].toFixed(2)}</div>
-                                </div>
-                                <div class="odd-item">
-                                    <div class="odd-label">2</div>
-                                    <div class="odd-val">${m.odds['2'].toFixed(2)}</div>
-                                </div>
-                            </div>
-
-                            <div class="assignment">
-                                ${m.repartition.map(a => `
-                                    <div class="assignment-row">
-                                        <span>${a.joueur} (${a.issue})</span>
-                                        <span>${a.gain}€</span>
-                                    </div>
-                                `).join('')}
-                            </div>
+            function loadData(bm) {
+                const content = document.getElementById('content');
+                const data = STORE[bm];
+                
+                if (!data) {
+                    content.innerHTML = `<div style="text-align:center;color:var(--danger)">Données manquantes pour ${bm}</div>`;
+                    return;
+                }
+                
+                // Affichage explicite de l'erreur
+                if (data.error) {
+                    content.innerHTML = `<div style="text-align:center;color:var(--danger);padding:40px">
+                        <h3>❌ Erreur de Scraping</h3>
+                        <p>${data.error}</p>
+                        <div style="margin-top:20px;font-size:14px;color:var(--text-secondary)">
+                            💡 Les serveurs GitHub sont probablement bloqués par ${bm}.<br>
+                            Essayez de lancer le site en local avec <code>python app.py</code>.
                         </div>
-                    `;
-                });
-                html += '</div>';
+                    </div>`;
+                    return;
+                }
+
+                displayMatches(data);
             }
 
-            // Section 2 Issues
-            html += `<div class="section-title" style="margin-top:40px">
-                        Matchs à 2 issues (Basket, Tennis...) 
-                        <span class="badge">${data.count_2p}</span>
-                     </div>`;
+            function displayMatches(data) {
+                const content = document.getElementById('content');
+                let html = '';
 
-            if (data.matches_2p.length === 0) {
-                html += '<p style="color:var(--text-secondary)">Aucun match trouvé.</p>';
-            } else {
-                html += '<div class="matches-grid">';
-                data.matches_2p.forEach(m => {
-                    const color = m.conversion_rate >= 100 ? '#10b981' : (m.conversion_rate >= 70 ? '#f59e0b' : '#ef4444');
-                    html += `
-                        <div class="match-card">
-                            <div class="match-header">
-                                <div>
-                                    <div class="teams">${m.home_team} vs ${m.away_team}</div>
-                                    <div class="meta">${m.competition} - ${m.sport || ''}</div>
-                                </div>
-                                <div class="conversion" style="color:${color}">${m.conversion_rate}%</div>
-                            </div>
-                            
-                            <div class="odds-row">
-                                <div class="odd-item">
-                                    <div class="odd-label">1</div>
-                                    <div class="odd-val">${m.odds['1'].toFixed(2)}</div>
-                                </div>
-                                <div class="odd-item">
-                                    <div class="odd-label">2</div>
-                                    <div class="odd-val">${m.odds['2'].toFixed(2)}</div>
-                                </div>
-                            </div>
+                // Sécurisation des tableaux (fallback vide si undefined)
+                const m3 = data.matches_3p || [];
+                const m2 = data.matches_2p || [];
 
-                            <div class="assignment">
-                                ${m.repartition.map(a => `
-                                    <div class="assignment-row">
-                                        <span>${a.joueur} (${a.issue})</span>
-                                        <span>${a.gain}€</span>
+                // Section 3 Issues
+                html += `<div class="section-title">
+                            Matchs à 3 issues (Foot, Rugby...) 
+                            <span class="badge">${data.count_3p || 0}</span>
+                        </div>`;
+                
+                if (m3.length === 0) {
+                    html += '<p style="color:var(--text-secondary)">Aucun match trouvé.</p>';
+                } else {
+                    html += '<div class="matches-grid">';
+                    m3.forEach(m => {
+                        const color = m.conversion_rate >= 100 ? '#10b981' : (m.conversion_rate >= 70 ? '#f59e0b' : '#ef4444');
+                        // Protection valeurs manquantes
+                        const o1 = (m.odds && m.odds['1']) || 0;
+                        const oN = (m.odds && m.odds['X']) || 0;
+                        const o2 = (m.odds && m.odds['2']) || 0;
+                        
+                        html += `
+                            <div class="match-card">
+                                <div class="match-header">
+                                    <div>
+                                        <div class="teams">${m.home_team} vs ${m.away_team}</div>
+                                        <div class="meta">${m.competition} - ${m.sport || ''}</div>
                                     </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
+                                    <div class="conversion" style="color:${color}">${m.conversion_rate}%</div>
+                                </div>
+                                
+                                <div class="odds-row">
+                                    <div class="odd-item">
+                                        <div class="odd-label">1</div>
+                                        <div class="odd-val">${o1.toFixed(2)}</div>
+                                    </div>
+                                    <div class="odd-item">
+                                        <div class="odd-label">N</div>
+                                        <div class="odd-val">${oN.toFixed(2)}</div>
+                                    </div>
+                                    <div class="odd-item">
+                                        <div class="odd-label">2</div>
+                                        <div class="odd-val">${o2.toFixed(2)}</div>
+                                    </div>
+                                </div>
 
-            content.innerHTML = html;
+                                <div class="assignment">
+                                    ${(m.repartition || []).map(a => `
+                                        <div class="assignment-row">
+                                            <span>${a.joueur} (${a.issue})</span>
+                                            <span>${a.gain}€</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // Section 2 Issues
+                html += `<div class="section-title" style="margin-top:40px">
+                            Matchs à 2 issues (Basket, Tennis...) 
+                            <span class="badge">${data.count_2p || 0}</span>
+                        </div>`;
+                
+                if (m2.length === 0) {
+                    html += '<p style="color:var(--text-secondary)">Aucun match trouvé.</p>';
+                } else {
+                    html += '<div class="matches-grid">';
+                    m2.forEach(m => {
+                        const color = m.conversion_rate >= 100 ? '#10b981' : (m.conversion_rate >= 70 ? '#f59e0b' : '#ef4444');
+                        const o1 = (m.odds && m.odds['1']) || 0;
+                        const o2 = (m.odds && m.odds['2']) || 0;
+                        
+                        html += `
+                            <div class="match-card">
+                                <div class="match-header">
+                                    <div>
+                                        <div class="teams">${m.home_team} vs ${m.away_team}</div>
+                                        <div class="meta">${m.competition} - ${m.sport || ''}</div>
+                                    </div>
+                                    <div class="conversion" style="color:${color}">${m.conversion_rate}%</div>
+                                </div>
+                                
+                                <div class="odds-row">
+                                    <div class="odd-item">
+                                        <div class="odd-label">1</div>
+                                        <div class="odd-val">${o1.toFixed(2)}</div>
+                                    </div>
+                                    <div class="odd-item">
+                                        <div class="odd-label">2</div>
+                                        <div class="odd-val">${o2.toFixed(2)}</div>
+                                    </div>
+                                </div>
+
+                                <div class="assignment">
+                                    ${(m.repartition || []).map(a => `
+                                        <div class="assignment-row">
+                                            <span>${a.joueur} (${a.issue})</span>
+                                            <span>${a.gain}€</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                content.innerHTML = html;
+            }
+        } catch (err) {
+            document.body.innerHTML += `<div style="color:red;padding:20px">Catastrophic Error: ${err.message}</div>`;
         }
     </script>
 </body>
-
 </html>
