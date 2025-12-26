@@ -71,8 +71,23 @@ class PMUScraper:
         options.add_argument("--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         
         service = Service(ChromeDriverManager().install())
+        # Initialisation du driver
         driver = webdriver.Chrome(service=service, options=options)
         
+        # Configuration Stealth (Furtivité avancée)
+        try:
+            from selenium_stealth import stealth
+            stealth(driver,
+                languages=["fr-FR", "fr"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+            )
+        except ImportError:
+            print("⚠️ Selenium-stealth non installé, mode standard")
+
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                 Object.defineProperty(navigator, 'webdriver', {
