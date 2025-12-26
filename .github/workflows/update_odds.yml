@@ -1,8 +1,10 @@
 name: Update Odds
 
 on:
+  push:
+    branches: [ "main" ]  # Se lance quand tu pousses le code
   schedule:
-    - cron: '0 * * * *'  # Toutes les heures
+    - cron: '0 * * * *'   # Toutes les heures
   workflow_dispatch:      # Lancement manuel
 
 permissions:
