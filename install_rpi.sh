@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Script d'installation automatique pour Raspberry Pi
+# ==========================================
+# PARIS SPORTIFS OPTIMIZER - INSTALLATEUR RPI
+# ==========================================
+
 echo "🍓 Installation Paris Sportifs Optimizer sur Raspberry Pi..."
+USER_HOME=$(eval echo ~$SUDO_USER)
+PROJECT_DIR=$(pwd)
 
 # 1. Mise à jour système et dépendances
 echo "📦 Installation des paquets système..."
@@ -14,20 +19,59 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
-# 3. Activation et Installation requirements
+# 3. Installation des libs Python
 echo "📚 Installation des librairies Python..."
 source venv/bin/activate
 pip install --upgrade pip
-# Selenium sur ARM/RPi peut être capricieux, on force certaines versions si besoin
 pip install -r requirements.txt
 
-# 4. Configuration du Cron (Scraping toutes les heures)
-CURRENT_PATH=$(pwd)
-CRON_CMD="0 * * * * cd $CURRENT_PATH && $CURRENT_PATH/venv/bin/python build_static.py >> scraper.log 2>&1 && git add . && git commit -m 'Auto update' && git push"
+# 4. Création du Service Systemd (Démarrage auto)
+echo "⚙️ Création du service systemd..."
+SERVICE_FILE="/etc/systemd/system/paris-sportifs.service"
 
-# Vérifier si le cron existe déjà
-(crontab -l 2>/dev/null | grep -F "build_static.py") || (crontab -l 2>/dev/null; echo "$CRON_CMD") | crontab -
+sudo bash -c "cat > $SERVICE_FILE" <<EOL
+[Unit]
+Description=Paris Sportifs Optimizer Service
+After=network.target
 
-echo "✅ Installation terminée !"
-echo "🕒 Le scraper tournera automatiquement toutes les heures."
-echo "ℹ️ Pour lancer un scraping manuel : source venv/bin/activate && python build_static.py"
+[Service]
+User=$SUDO_USER
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python app.py
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# 5. Activation du service
+echo "🚀 Activation du service..."
+sudo systemctl daemon-reload
+sudo systemctl enable paris-sportifs.service
+sudo systemctl start paris-sportifs.service
+
+# 6. Installation Cloudflare Tunnel (Accès Web Gratuit)
+echo "☁️ Installation de Cloudflare Tunnel..."
+# Détection architecture pour binaire cloudflared
+ARCH=$(dpkg --print-architecture)
+if [ "$ARCH" = "armhf" ] || [ "$ARCH" = "armv7l" ]; then
+    wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm -O cloudflared
+elif [ "$ARCH" = "arm64" ]; then
+    wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -O cloudflared
+else
+    wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O cloudflared
+fi
+
+chmod +x cloudflared
+sudo mv cloudflared /usr/local/bin/
+
+echo "✅ INSTALLATION TERMINÉE !"
+echo "---------------------------------------------------"
+echo "1. L'application tourne en fond (service 'paris-sportifs')"
+echo "2. URL Locale : http://$(hostname -I | awk '{print $1}'):5000"
+echo ""
+echo "🌍 POUR AVOIR UNE ADRESSE WEB GRATUITE :"
+echo "   Lance cette commande pour créer un tunnel temporaire :"
+echo "   cloudflared tunnel --url http://localhost:5000"
+echo "---------------------------------------------------"
