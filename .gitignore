@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnement Virtuel
+venv/
+env/
+.env
+
+# IDE / Editeurs
+.vscode/
+.idea/
+.DS_Store
+
+# Logs et runtime
+*.log
+geckodriver.log
+chromedriver.log
+
+# Projet spécifique
+.gemini/
+.gemini_artifacts/
+brain/

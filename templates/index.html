@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paris Sportifs Optimizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(45deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            border-color: var(--accent);
+            background-color: #263345;
+        }
+
+        button.primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        button.primary:hover {
+            background-color: #2563eb;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .tab.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .stats-bar {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .indicator.ready {
+            background: var(--success);
+        }
+
+        .indicator.loading {
+            background: var(--warning);
+        }
+
+        .indicator.error {
+            background: var(--danger);
+        }
+
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .match-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .teams {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .conversion {
+            font-size: 18px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .odds-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .odd-item {
+            text-align: center;
+        }
+
+        .odd-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .odd-val {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .assignment {
+            font-size: 13px;
+        }
+
+        .assignment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-title {
+            margin: 30px 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Paris Sportifs Optimizer</h1>
+            <div class="controls">
+                <button onclick="clearCache()">🗑️ Vider Cache</button>
+            </div>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div id="status-pmu" class="indicator"></div>
+                <span>PMU: <span id="text-pmu">En attente...</span></span>
+            </div>
+            <div class="stat-item">
+                <div id="status-winamax" class="indicator"></div>
+                <span>Winamax: <span id="text-winamax">En attente...</span></span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('winamax')">Winamax</div>
+            <div class="tab" onclick="switchTab('pmu')">PMU Sport</div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <div id="loading-text">Chargement des meilleures opportunités...</div>
+        </div>
+
+        <div id="content"></div>
+    </div>
+
+    <script>
+        let currentBookmaker = 'winamax';
+
+        // Au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            checkStatus();
+            // Poll status every 5s
+            setInterval(checkStatus, 5000);
+            loadData(currentBookmaker);
+        });
+
+        async function checkStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                updateIndicator('pmu', data.preload.pmu, data.cache.pmu);
+                updateIndicator('winamax', data.preload.winamax, data.cache.winamax);
+            } catch (e) {
+                console.error("Status error", e);
+            }
+        }
+
+        function updateIndicator(bm, preload, cache) {
+            const el = document.getElementById(`status-${bm}`);
+            const text = document.getElementById(`text-${bm}`);
+
+            if (cache.has_data) {
+                el.className = 'indicator ready';
+                text.textContent = `Prêt (Cache ${cache.age_seconds}s)`;
+            } else if (preload === 'loading') {
+                el.className = 'indicator loading';
+                text.textContent = 'Scraping en cours...';
+            } else if (preload === 'error') {
+                el.className = 'indicator error';
+                text.textContent = 'Erreur';
+            } else {
+                el.className = 'indicator';
+                text.textContent = 'En attente';
+            }
+        }
+
+        function switchTab(bm) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            currentBookmaker = bm;
+            loadData(bm);
+        }
+
+        async function loadData(bm) {
+            const content = document.getElementById('content');
+            const loading = document.getElementById('loading');
+
+            content.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const res = await fetch(`/api/scrape/${bm}`);
+                const data = await res.json();
+                loading.style.display = 'none';
+
+                if (data.error) {
+                    content.innerHTML = `<div style="text-align:center;color:var(--danger)">${data.error}</div>`;
+                    return;
+                }
+
+                displayMatches(data);
+
+            } catch (e) {
+                loading.style.display = 'none';
+                content.innerHTML = `<div style="text-align:center;color:var(--danger)">Erreur de chargement: ${e}</div>`;
+            }
+        }
+
+        function displayMatches(data) {
+            const content = document.getElementById('content');
+            let html = '';
+
+            // Section 3 Parieurs (Foot, Rugby...) - EN PREMIER
+            html += `<div class="section-title">
+                        Matchs à 3 issues (Foot, Rugby...) 
+                        <span class="badge">${data.count_3p}</span>
+                     </div>`;
+
+            if (data.matches_3p.length === 0) {
+                html += '<p style="color:var(--text-secondary)">Aucun match trouvé.</p>';
+            } else {
+                html += '<div class="matches-grid">';
+                data.matches_3p.forEach(m => {
+                    const color = m.conversion_rate >= 100 ? '#10b981' : (m.conversion_rate >= 70 ? '#f59e0b' : '#ef4444');
+                    html += `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div>
+                                    <div class="teams">${m.home_team} vs ${m.away_team}</div>
+                                    <div class="meta">${m.competition} - ${m.sport || ''}</div>
+                                </div>
+                                <div class="conversion" style="color:${color}">${m.conversion_rate}%</div>
+                            </div>
+                            
+                            <div class="odds-row">
+                                <div class="odd-item">
+                                    <div class="odd-label">1</div>
+                                    <div class="odd-val">${m.odds_home.toFixed(2)}</div>
+                                </div>
+                                <div class="odd-item">
+                                    <div class="odd-label">N</div>
+                                    <div class="odd-val">${m.odds_draw.toFixed(2)}</div>
+                                </div>
+                                <div class="odd-item">
+                                    <div class="odd-label">2</div>
+                                    <div class="odd-val">${m.odds_away.toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            <div class="assignment">
+                                ${m.assignment.map(a => `
+                                    <div class="assignment-row">
+                                        <span>${a.joueur} (${a.issue})</span>
+                                        <span>${a.gain}€</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Section 2 Parieurs (Basket, Tennis...) - EN SECOND
+            html += `<div class="section-title" style="margin-top:40px">
+                        Matchs à 2 issues (Basket, Tennis...) 
+                        <span class="badge">${data.count_2p}</span>
+                     </div>`;
+
+            if (data.matches_2p.length === 0) {
+                html += '<p style="color:var(--text-secondary)">Aucun match trouvé.</p>';
+            } else {
+                html += '<div class="matches-grid">';
+                data.matches_2p.forEach(m => {
+                    const color = m.conversion_rate >= 100 ? '#10b981' : (m.conversion_rate >= 70 ? '#f59e0b' : '#ef4444');
+                    html += `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div>
+                                    <div class="teams">${m.home_team} vs ${m.away_team}</div>
+                                    <div class="meta">${m.competition} - ${m.sport || ''}</div>
+                                </div>
+                                <div class="conversion" style="color:${color}">${m.conversion_rate}%</div>
+                            </div>
+                            
+                            <div class="odds-row">
+                                <div class="odd-item">
+                                    <div class="odd-label">1</div>
+                                    <div class="odd-val">${m.odds_home.toFixed(2)}</div>
+                                </div>
+                                <div class="odd-item">
+                                    <div class="odd-label">2</div>
+                                    <div class="odd-val">${m.odds_away.toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            <div class="assignment">
+                                ${m.assignment.map(a => `
+                                    <div class="assignment-row">
+                                        <span>${a.joueur} (${a.issue})</span>
+                                        <span>${a.gain}€</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            content.innerHTML = html;
+        }
+
+        async function clearCache() {
+            if (confirm('Voulez-vous vraiment vider le cache et relancer le scraping ?')) {
+                await fetch('/api/clear-cache');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>
